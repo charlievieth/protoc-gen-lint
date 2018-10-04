@@ -1,8 +1,8 @@
 package linter
 
 import (
-	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 )
@@ -75,17 +75,39 @@ func LintProtoFile(conf Config) (int, error) {
 	for i, v := range conf.ProtoFile.GetService() {
 		errors.lintProtoService(int32(i), v)
 	}
+
+	// filter errors
+	a := errors[:0]
 	for _, v := range errors {
-		line, col := v.getSourceLineNumber(protoSource)
-		fmt.Fprintf(
-			conf.OutFile,
-			"%s:%d:%d: '%s' - %s\n",
-			*conf.ProtoFile.Name,
-			line,
-			col,
-			v.errorString,
-			linterErrors[v.errorCode],
-		)
+		if v.errorCode != errorMessageCase {
+			a = append(a, v)
+		}
+	}
+	errors = a
+
+	// calculate line and column in parallel
+	errors.calculateLineCol(protoSource)
+
+	name := *conf.ProtoFile.Name
+	buf := make([]byte, 0, 128)
+
+	prefix := name + ":"
+	buf = append(buf, prefix...)
+
+	for _, v := range errors {
+		line, col := v.line, v.col
+		buf = buf[:len(prefix)]
+		buf = strconv.AppendInt(buf, int64(line), 10)
+		buf = append(buf, ':')
+		buf = strconv.AppendInt(buf, int64(col), 10)
+		buf = append(buf, ": '"...)
+		buf = append(buf, v.errorString...)
+		buf = append(buf, "' - "...)
+		buf = append(buf, linterErrors[v.errorCode]...)
+		buf = append(buf, '\n')
+		if _, err := conf.OutFile.Write(buf); err != nil {
+			return 0, err
+		}
 	}
 
 	return len(errors), nil

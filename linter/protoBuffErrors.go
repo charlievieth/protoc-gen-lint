@@ -1,12 +1,43 @@
 package linter
 
 import (
+	"runtime"
 	"sort"
+	"sync"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 )
 
 type protoBufErrors []*protoBufError
+
+func (p protoBufErrors) calculateLineCol(protoSource *descriptor.SourceCodeInfo) {
+	if len(p) == 0 {
+		return
+	}
+
+	numCPU := runtime.NumCPU()
+	if len(p) < numCPU {
+		numCPU = len(p)
+	}
+
+	ch := make(chan *protoBufError, numCPU*4)
+	var wg sync.WaitGroup
+	wg.Add(numCPU)
+
+	for i := 0; i < numCPU; i++ {
+		go func() {
+			for v := range ch {
+				v.setSourceLineNumber(protoSource)
+			}
+			wg.Done()
+		}()
+	}
+	for _, v := range p {
+		ch <- v
+	}
+	close(ch)
+	wg.Wait()
+}
 
 func (p *protoBufErrors) addError(e *protoBufError) {
 	*p = append(*p, e)

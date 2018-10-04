@@ -21,6 +21,9 @@ func panicOnError(err error) {
 	}
 }
 
+type LintWriter struct {
+}
+
 func main() {
 	var (
 		totalErrors      int

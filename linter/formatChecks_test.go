@@ -17,7 +17,7 @@ func TestIsCamelCase(t *testing.T) {
 
 	for _, v := range stringsToTest {
 		if got := isCamelCase(v.test); got != v.want {
-			t.Errorf("Expected %t, Received %t", v.want, got)
+			t.Errorf("%s: Expected %t, Received %t", v.test, v.want, got)
 		}
 	}
 }
