@@ -55,7 +55,6 @@ func (p *protoBufErrors) lintProtoMessage(
 	parentPath []int32,
 	protoMessage *descriptor.DescriptorProto,
 ) {
-
 	path := append(
 		parentPath,
 		pathType,
@@ -63,6 +62,13 @@ func (p *protoBufErrors) lintProtoMessage(
 	)
 
 	if !isCamelCase(protoMessage.GetName()) {
+		if path == nil {
+			path = append(
+				parentPath,
+				pathType,
+				pathIndex,
+			)
+		}
 		p.addError(&protoBufError{
 			path:        path,
 			errorCode:   errorMessageCase,
@@ -88,12 +94,12 @@ func (p *protoBufErrors) lintProtoField(
 	parentPath []int32,
 	messageField *descriptor.FieldDescriptorProto,
 ) {
-	path := append(
-		parentPath,
-		pathMessageField,
-		pathIndex,
-	)
 	if !isLowerUnderscore(messageField.GetName()) {
+		path := append(
+			parentPath,
+			pathMessageField,
+			pathIndex,
+		)
 		p.addError(&protoBufError{
 			path:        path,
 			errorCode:   errorFieldCase,
@@ -108,13 +114,22 @@ func (p *protoBufErrors) lintProtoEnumType(
 	parentPath []int32,
 	protoEnum *descriptor.EnumDescriptorProto,
 ) {
-	path := append(
-		parentPath,
-		pathType,
-		pathIndex,
-	)
-
+	var path []int32
+	if len(protoEnum.GetValue()) != 0 {
+		path = append(
+			parentPath,
+			pathType,
+			pathIndex,
+		)
+	}
 	if !isCamelCase(protoEnum.GetName()) {
+		if path == nil {
+			path = append(
+				parentPath,
+				pathType,
+				pathIndex,
+			)
+		}
 		p.addError(&protoBufError{
 			path:        path,
 			errorCode:   errorEnumTypeCase,
@@ -132,12 +147,12 @@ func (p *protoBufErrors) lintProtoEnumValue(
 	parentPath []int32,
 	enumVal *descriptor.EnumValueDescriptorProto,
 ) {
-	path := append(
-		parentPath,
-		pathEnumValue,
-		pathIndex,
-	)
 	if !isUpperUnderscore(enumVal.GetName()) {
+		path := append(
+			parentPath,
+			pathEnumValue,
+			pathIndex,
+		)
 		p.addError(&protoBufError{
 			path:        path,
 			errorCode:   errorEnumValueCase,
@@ -172,12 +187,12 @@ func (p *protoBufErrors) lintProtoRPCMethod(
 	parentPath []int32,
 	serviceMethod *descriptor.MethodDescriptorProto,
 ) {
-	path := append(
-		parentPath,
-		pathRPCMethod,
-		pathIndex,
-	)
 	if !isCamelCase(serviceMethod.GetName()) {
+		path := append(
+			parentPath,
+			pathRPCMethod,
+			pathIndex,
+		)
 		p.addError(&protoBufError{
 			path:        path,
 			errorCode:   errorRPCMethodCase,
