@@ -2,6 +2,7 @@ package linter
 
 func isLower(c byte) bool { return 'a' <= c && c <= 'z' }
 func isUpper(c byte) bool { return 'A' <= c && c <= 'Z' }
+func isDigit(c byte) bool { return '0' <= c && c <= '9' }
 
 func isCamelCase(s string) bool {
 	const minAllUppercaseLen = 4
@@ -14,7 +15,7 @@ func isCamelCase(s string) bool {
 		if isLower(c) {
 			break
 		}
-		if !isUpper(c) {
+		if !isUpper(c) && !isDigit(c) {
 			return false
 		}
 	}
@@ -23,7 +24,7 @@ func isCamelCase(s string) bool {
 	}
 	for ; i < len(s); i++ {
 		c := s[i]
-		if !isLower(c) && !isUpper(c) {
+		if !isLower(c) && !isUpper(c) && !isDigit(c) {
 			return false
 		}
 	}
@@ -36,7 +37,7 @@ func isLowerUnderscore(s string) bool {
 	}
 	for i := 1; i < len(s); i++ {
 		c := s[i]
-		if !isLower(c) && c != '_' {
+		if !isLower(c) && !isDigit(c) && c != '_' {
 			return false
 		}
 	}
@@ -49,7 +50,7 @@ func isUpperUnderscore(s string) bool {
 	}
 	for i := 0; i < len(s); i++ {
 		c := s[i]
-		if !isUpper(c) && c != '_' {
+		if !isUpper(c) && !isDigit(c) && c != '_' {
 			return false
 		}
 	}
