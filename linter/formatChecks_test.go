@@ -55,11 +55,12 @@ func TestIsLowerUnderscore(t *testing.T) {
 		{"hello_world_", false},
 		{"HELLOWORLD", false},
 		{"HelloWorld", false},
+		{"hello1", true},
 	}
 
-	for _, v := range stringsToTest {
+	for i, v := range stringsToTest {
 		if got := isLowerUnderscore(v.test); got != v.want {
-			t.Errorf("Expected %t, Received %t", v.want, got)
+			t.Errorf("%d: '%s' Expected %t, Received %t", i, v.test, v.want, got)
 		}
 	}
 }
@@ -79,9 +80,9 @@ func TestIsUpperUnderscore(t *testing.T) {
 		{"HelloWorld", false},
 	}
 
-	for _, v := range stringsToTest {
+	for i, v := range stringsToTest {
 		if got := isUpperUnderscore(v.test); got != v.want {
-			t.Errorf("Expected %t, Received %t", v.want, got)
+			t.Errorf("%d: '%s' Expected %t, Received %t", i, v.test, v.want, got)
 		}
 	}
 }

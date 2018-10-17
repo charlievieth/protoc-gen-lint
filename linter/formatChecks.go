@@ -41,7 +41,7 @@ func isLowerUnderscore(s string) bool {
 			return false
 		}
 	}
-	return isLower(s[len(s)-1]) // don't allow trailing underscore
+	return s[len(s)-1] != '_' // don't allow trailing underscore
 }
 
 func isUpperUnderscore(s string) bool {
@@ -54,5 +54,5 @@ func isUpperUnderscore(s string) bool {
 			return false
 		}
 	}
-	return isUpper(s[len(s)-1]) // don't allow trailing underscore
+	return s[len(s)-1] != '_' // don't allow trailing underscore
 }
