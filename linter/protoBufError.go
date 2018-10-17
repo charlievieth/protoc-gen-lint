@@ -1,8 +1,6 @@
 package linter
 
-import (
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-)
+import "github.com/golang/protobuf/protoc-gen-go/descriptor"
 
 type protoBufError struct {
 	path        []int32

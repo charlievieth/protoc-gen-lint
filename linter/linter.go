@@ -1,6 +1,7 @@
 package linter
 
 import (
+	"bufio"
 	"io"
 	"strconv"
 
@@ -20,10 +21,7 @@ const (
 	pathMessageEnum    = 4
 )
 
-type (
-	errorCode        int
-	errorDescription string
-)
+type errorCode int
 
 const (
 	//Error Types
@@ -36,7 +34,7 @@ const (
 	errorRPCMethodCase
 )
 
-var linterErrors = []errorDescription{
+var linterErrors = [...]string{
 	"Sort import statements alphabetically.",
 	"Use CamelCase (with an initial capital) for message names.",
 	"Use underscore_separated_names for field names.",
@@ -55,10 +53,7 @@ type Config struct {
 // LintProtoFile takes a file name, proto file description, and a file.
 // It checks the file for errors and writes them to the output file
 func LintProtoFile(conf Config) (int, error) {
-	var (
-		errors      = protoBufErrors{}
-		protoSource = conf.ProtoFile.GetSourceCodeInfo()
-	)
+	var errors protoBufErrors
 
 	if conf.SortImports {
 		errors.lintImportOrder(conf.ProtoFile.GetDependency())
@@ -86,30 +81,31 @@ func LintProtoFile(conf Config) (int, error) {
 	errors = a
 
 	// calculate line and column in parallel
-	errors.calculateLineCol(protoSource)
+	errors.calculateLineCol(conf.ProtoFile.GetSourceCodeInfo())
 
-	name := *conf.ProtoFile.Name
 	buf := make([]byte, 0, 128)
+	w := bufio.NewWriter(conf.OutFile)
 
-	prefix := name + ":"
+	prefix := *conf.ProtoFile.Name + ":"
 	buf = append(buf, prefix...)
 
 	for _, v := range errors {
-		line, col := v.line, v.col
 		buf = buf[:len(prefix)]
-		buf = strconv.AppendInt(buf, int64(line), 10)
+		buf = strconv.AppendInt(buf, int64(v.line), 10)
 		buf = append(buf, ':')
-		buf = strconv.AppendInt(buf, int64(col), 10)
+		buf = strconv.AppendInt(buf, int64(v.col), 10)
 		buf = append(buf, ": '"...)
 		buf = append(buf, v.errorString...)
 		buf = append(buf, "' - "...)
 		buf = append(buf, linterErrors[v.errorCode]...)
 		buf = append(buf, '\n')
-		if _, err := conf.OutFile.Write(buf); err != nil {
+		if _, err := w.Write(buf); err != nil {
 			return 0, err
 		}
 	}
+	if err := w.Flush(); err != nil {
+		return len(errors), err
+	}
 
 	return len(errors), nil
-
 }

@@ -15,9 +15,15 @@ func (p protoBufErrors) calculateLineCol(protoSource *descriptor.SourceCodeInfo)
 		return
 	}
 
-	numCPU := runtime.NumCPU()
-	if len(p) < numCPU {
-		numCPU = len(p)
+	numCPU := runtime.NumCPU() - 1
+	if numCPU < 2 {
+		numCPU = 2
+	}
+	if n := len(p) / 50; n < numCPU {
+		if n == 0 {
+			n = 1
+		}
+		numCPU = n
 	}
 
 	ch := make(chan *protoBufError, numCPU*4)
