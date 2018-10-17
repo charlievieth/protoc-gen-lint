@@ -10,6 +10,15 @@ import (
 
 type protoBufErrors []*protoBufError
 
+type byLineCol protoBufErrors
+
+func (p byLineCol) Len() int      { return len(p) }
+func (p byLineCol) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+
+func (p byLineCol) Less(i, j int) bool {
+	return p[i].line < p[j].line || (p[i].line == p[j].line && p[i].col < p[j].col)
+}
+
 func (p protoBufErrors) calculateLineCol(protoSource *descriptor.SourceCodeInfo) {
 	if len(p) == 0 {
 		return

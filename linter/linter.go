@@ -3,6 +3,7 @@ package linter
 import (
 	"bufio"
 	"io"
+	"sort"
 	"strconv"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -82,6 +83,8 @@ func LintProtoFile(conf Config) (int, error) {
 
 	// calculate line and column in parallel
 	errors.calculateLineCol(conf.ProtoFile.GetSourceCodeInfo())
+	// sort output by line and column
+	sort.Sort(byLineCol(errors))
 
 	buf := make([]byte, 0, 128)
 	w := bufio.NewWriter(conf.OutFile)
